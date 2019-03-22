@@ -1,0 +1,3 @@
+[submodule "external/jobxx"]
+	path = external/jobxx
+	url = https://github.com/seanmiddleditch/jobxx.git

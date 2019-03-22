@@ -1,3 +1,6 @@
 [submodule "external/jobxx"]
 	path = external/jobxx
 	url = https://github.com/seanmiddleditch/jobxx.git
+[submodule "external/catch2"]
+	path = external/catch2
+	url = https://github.com/catchorg/Catch2.git

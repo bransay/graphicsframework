@@ -1,3 +1,6 @@
 [submodule "external/jobxx"]
 	path = external/jobxx
 	url = https://github.com/seanmiddleditch/jobxx.git
+[submodule "external/prove"]
+	path = external/prove
+	url = https://github.com/pfultz2/Prove.git

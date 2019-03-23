@@ -6,7 +6,7 @@
 #include <future>
 #include <atomic>
 
-// TODO: we will probably replace this with something else
+// This is a simple thread pool setup for testing jobxx
 template <unsigned THREAD_POOL_SIZE>
 class SimpleThreadPool
 {
@@ -110,7 +110,10 @@ SCENARIO("Tasks are executed", "[jobxx]")
 			// sleep for short time
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			++executedCount;
-			allTasksCompleted.notify_one();
+			{
+				std::lock_guard<std::mutex> guard(taskCompleteMutex);
+				allTasksCompleted.notify_one();
+			}
 		};
 
 		WHEN("I execute the task(s)")
@@ -130,8 +133,7 @@ SCENARIO("Tasks are executed", "[jobxx]")
 			}
 
 			// wait until tasks complete
-			while (executedCount != taskCount)
-				allTasksCompleted.wait(std::unique_lock<std::mutex>(taskCompleteMutex));
+			allTasksCompleted.wait(std::unique_lock<std::mutex>(taskCompleteMutex), [&] { return executedCount == taskCount; });
 
 			THEN("They should have all executed only once")
 			{

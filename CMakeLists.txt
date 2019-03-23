@@ -8,7 +8,8 @@ set (SRC_DIR src)
 set (INC_DIR inc)
 set (TESTS_SRC_DIR ${SRC_DIR}/tests)
 set (TESTS_INC_DIR ${INC_DIR}/tests)
-set (EXTERN_INC_DIR external/inc)
+set (EXTERN_DIR external)
+set (EXTERN_INC_DIR ${EXTERN_DIR}/inc)
 
 if (WIN32)
     set (TARGET_PLATFORM WIN32)
@@ -26,6 +27,21 @@ if (WIN32)
 	set (PLATFORM_LIBS_DEBUG
 		${PLATFORM_LIBS_DIR}/debug/jobxx.lib
 	)
+
+	if (MSVC)
+		# enable support for solution folders
+		set_property (GLOBAL PROPERTY USE_FOLDERS ON)
+	endif()
+endif()
+
+# External projects
+set (JOBXX_DIR ${EXTERN_DIR}/jobxx)
+file (GLOB JOBXX_SRC ${JOBXX_DIR}/source/*.cc)
+file (GLOB JOBXX_INCLUDES ${JOBXX_DIR}/include/jobxx/*.h)
+add_library (jobxx STATIC EXCLUDE_FROM_ALL ${JOBXX_SRC} ${JOBXX_INCLUDES})
+target_include_directories (jobxx PRIVATE ${JOBXX_DIR}/include)
+if (MSVC)
+	set_target_properties (jobxx PROPERTIES FOLDER external)
 endif()
 
 # Main Project

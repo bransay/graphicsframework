@@ -70,10 +70,25 @@ SCENARIO("Thread pools for testing can be created and destroyed", "[jobxx]")
 			}
 			destroyThreadPool.notify_one();
 
-			THEN("it should be destroyed.")
+			THEN("it should be destroyed within a reasonable time (5s)")
 			{
-				testThread.join();
-				REQUIRE(true);
+				// attempt to join the thread in a future with a timeout
+				auto* future = new std::future<void>(std::async(std::launch::async, &std::thread::join, &testThread));
+				std::future_status result = future->wait_for(std::chrono::seconds(5));
+
+				// if we timed out, the thread is doomed, just detach and let it run its course
+				// we can't delete the future either or its blocked, so we're going to leak
+				if (result == std::future_status::timeout)
+					testThread.detach();
+				else
+					delete future; // otherwise all is good, delete away
+
+				// evil force threading to end code needs to be caught to continue tests
+				try
+				{
+					REQUIRE(result != std::future_status::timeout);
+				}
+				catch (...) {}
 			}
 		}
 	}

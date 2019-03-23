@@ -64,6 +64,8 @@ target_include_directories(simple PRIVATE ${SIMPLE_INCLUDES})
 target_link_libraries (simple PRIVATE optimized ${SIMPLE_LIBS})
 target_link_libraries (simple PRIVATE debug ${SIMPLE_LIBS_DEBUG})
 
+# TODO: add more libraries and stuff?
+
 # Tests executable (for unit testing)
 set (TESTS_JOBXX_SRC
 	${TESTS_SRC_DIR}/jobxx_basic.cpp
@@ -86,7 +88,10 @@ target_include_directories(tests PRIVATE ${TESTS_INCLUDES})
 target_link_libraries(tests PRIVATE optimized ${TESTS_LIBS})
 target_link_libraries(tests PRIVATE debug ${TESTS_LIBS_DEBUG})
 
-# TODO: add more libraries and stuff?
+# Add tests and enable testing
+enable_testing ()
+add_test (NAME catch_tests COMMAND tests [catch])
+add_test (NAME jobxx_tests COMMAND tests [jobxx])
 
 # where to output
 install (TARGETS simple tests DESTINATION bin)

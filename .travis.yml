@@ -6,3 +6,4 @@ os: windows
 script:
     - cmake .
     - cmake --build . --config Release
+    - ctest .

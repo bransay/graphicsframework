@@ -1,8 +1,10 @@
 #include "catch2/catch.hpp"
 #include "jobxx/queue.h"
+#include "jobxx/park.h"
 
 #include <thread>
 #include <future>
+#include <atomic>
 
 // TODO: we will probably replace this with something else
 template <unsigned THREAD_POOL_SIZE>
@@ -92,19 +94,96 @@ SCENARIO("Thread pools for testing can be created and destroyed", "[jobxx]")
 	}
 }
 
-SCENARIO("Jobs are executed and completed", "[jobxx]")
+SCENARIO("Tasks are executed", "[jobxx]")
 {
-	GIVEN("A job with no dependencies")
+	TestThreadPool threadPool;
+
+	GIVEN("Some number of tasks with no dependencies")
 	{
-		WHEN("I execute a job")
+		unsigned taskCount = GENERATE(0, 1, 5, 10, 20, 30, 100, 200);
+
+		std::mutex taskCompleteMutex;
+		std::condition_variable allTasksCompleted;
+		std::atomic<int> executedCount = 0;
+		auto task = [&]()
 		{
-			THEN("It should complete execution")
+			// sleep for short time
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			++executedCount;
+			allTasksCompleted.notify_one();
+		};
+
+		WHEN("I execute the task(s)")
+		{
+			unsigned success = 0;
+			for (unsigned i = 0; i < taskCount; ++i)
 			{
+				if (threadPool.Queue().spawn_task(task) == jobxx::spawn_result::success)
+				{
+					++success;
+				}
 			}
 
-			THEN("It should have executed")
+			THEN("They should have spawned correctly")
 			{
+				REQUIRE(success == taskCount);
+			}
 
+			// wait until tasks complete
+			while (executedCount != taskCount)
+				allTasksCompleted.wait(std::unique_lock<std::mutex>(taskCompleteMutex));
+
+			THEN("They should have all executed only once")
+			{
+				REQUIRE(executedCount == taskCount);
+			}
+		}
+	}
+}
+
+SCENARIO("Jobs are executed and completed", "[jobxx]")
+{
+	TestThreadPool threadPool;
+
+	GIVEN("A job with some number of tasks")
+	{
+		unsigned taskCount = GENERATE(0, 1, 5, 10, 20, 30, 100, 200);
+
+		std::atomic<int> executedCount = 0;
+		auto jobInit = [&](jobxx::context& context)
+		{
+			for (unsigned i = 0; i < taskCount; ++i)
+			{
+				context.spawn_task([&]()
+				{
+					// sleep for a short time
+					std::this_thread::sleep_for(std::chrono::milliseconds(1));
+					++executedCount;
+				});
+			}
+		};
+
+		WHEN("I execute the job")
+		{
+			jobxx::job job = threadPool.Queue().create_job(jobInit);
+
+			THEN("The job should not complete immediately")
+			{
+				if (taskCount > 0)
+					REQUIRE_FALSE(job.complete());
+			}
+
+			// wait until the job completes
+			while (!job.complete()) {}
+
+			THEN("The job should complete")
+			{
+				REQUIRE(job.complete());
+			}
+
+			THEN("The job should execute the correct number of times when it's completed")
+			{
+				REQUIRE(executedCount == taskCount);
 			}
 		}
 	}

@@ -100,7 +100,7 @@ SCENARIO("Tasks are executed", "[jobxx]")
 
 	GIVEN("Some number of tasks with no dependencies")
 	{
-		unsigned taskCount = GENERATE(0, 1, 5, 10, 20, 30, 100, 200);
+		unsigned taskCount = GENERATE(0, 1, 5, 10, 20, 30);
 
 		std::mutex taskCompleteMutex;
 		std::condition_variable allTasksCompleted;
@@ -149,7 +149,7 @@ SCENARIO("Jobs are executed and completed", "[jobxx]")
 
 	GIVEN("A job with some number of tasks")
 	{
-		unsigned taskCount = GENERATE(0, 1, 5, 10, 20, 30, 100, 200);
+		unsigned taskCount = GENERATE(0, 1, 5, 10, 20, 30);
 
 		std::atomic<int> executedCount = 0;
 		auto jobInit = [&](jobxx::context& context)

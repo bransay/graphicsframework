@@ -3,14 +3,12 @@ language: cpp
 # build/test on windows
 os: windows
 
+script:
+    - cmake .
+    - cmake --build . --config Release
+
 jobs:
     include:
-        - stage: compile
-          name: "Compile Source"
-          script:
-            - cmake .
-            - cmake --build . --config Release
-        
         # TODO: separate tests according to type
         - stage: test
           name: "Run Unit Tests"
@@ -19,4 +17,3 @@ jobs:
 stages:
     - compile
     - test
-

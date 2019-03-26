@@ -19,7 +19,7 @@ jobs:
           install:
             # remove anything from the cache that's older than 5 days
             - find ~/artifactcache/ -mtime +5 -exec rm {} \;
-            - mkdir "~/artifactcache/$TRAVIS_BUILD_ID"
+            - mkdir -p "~/artifactcache/$TRAVIS_BUILD_ID"
             - cmake -DCMAKE_INSTALL_PREFIX="~/artifactcache/$TRAVIS_BUILD_ID" .
           script:
             - cmake --build . --config Release

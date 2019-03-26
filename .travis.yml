@@ -3,38 +3,23 @@ language: cpp
 # build/test on windows
 os: windows
 
-# TODO: we need options to cmake to not add external library source or this fails
-# we precompile submodules, so no need to clone them
-#git:
-#    submodules: false
-
-# for caching build artifacts
-cache:
-    directories:
-        - ~/artifactcache
-
 jobs:
     include:
         - stage: compile
           name: "Compile Source"
-          install:
-            # remove anything from the cache that's older than 5 days
-            - find ~/artifactcache/ -mtime +5 -exec rm {} \;
-            - mkdir -p "~/artifactcache/$TRAVIS_BUILD_ID"
-            - cmake -DCMAKE_INSTALL_PREFIX="~/artifactcache/$TRAVIS_BUILD_ID" .
           script:
+            - cmake .
             - cmake --build . --config Release
-            - cmake --build . --config Release --target install
         
         # TODO: we should share artifacts from compile for unit tests
         # TODO: we should split up unit tests according to functionality
         - stage: test
           name: "Run Unit Tests"
-          install:
-            - mkdir test
-            - cp -r "~/artifactcache/$TRAVIS_BUILD_ID/." test
-          script:
-            - test/bin/tests.exe
+          script: 
+            - cmake .
+            - cmake --build . --config Release
+            - ctest -C Release .
+          
 stages:
     - compile
     - test

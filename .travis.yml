@@ -3,6 +3,11 @@ language: cpp
 # build/test on windows
 os: windows
 
+# we precompile submodules, so no need to clone them
+git:
+    submodules: false
+
+# for caching build artifacts
 cache:
     directories:
         - ~/artifactcache
@@ -14,8 +19,8 @@ jobs:
           install:
             # remove anything from the cache that's older than 5 days
             - find ~/artifactcache/ -mtime +5 -exec rm {} \;
-            - mkdir "~/artifactcache/${TRAVIS_BUILD_ID}"
-            - cmake -DCMAKE_INSTALL_PREFIX="~/artifactcache/${TRAVIS_BUILD_ID}" .
+            - mkdir "~/artifactcache/$TRAVIS_BUILD_ID"
+            - cmake -DCMAKE_INSTALL_PREFIX="~/artifactcache/$TRAVIS_BUILD_ID" .
           script:
             - cmake --build . --config Release
             - cmake --build . --config Release --target install
@@ -26,7 +31,7 @@ jobs:
           name: "Run Unit Tests"
           install:
             - mkdir test
-            - cp -r "~/artifactcache/${TRAVIS_BUILD_ID}/." test
+            - cp -r "~/artifactcache/$TRAVIS_BUILD_ID/." test
           script:
             - test/tests.exe
 stages:

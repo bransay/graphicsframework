@@ -3,9 +3,10 @@ language: cpp
 # build/test on windows
 os: windows
 
+# TODO: we need options to cmake to not add external library source or this fails
 # we precompile submodules, so no need to clone them
-git:
-    submodules: false
+#git:
+#    submodules: false
 
 # for caching build artifacts
 cache:

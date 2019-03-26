@@ -3,26 +3,32 @@ language: cpp
 # build/test on windows
 os: windows
 
-cache: ccache;
+cache:
+    directories:
+        - ~/artifactcache
 
 jobs:
     include:
         - stage: compile
           name: "Compile Source"
+          install:
+            # remove anything from the cache that's older than 5 days
+            - find ~/artifactcache/ -mtime +5 -exec rm {} \;
+            - mkdir ~/artifactcache/$TRAVIS_BUILD_ID
+            - cmake -DCMAKE_INSTALL_PREFIX=~/artifactcache/$TRAVIS_BUILD_ID .
           script:
-            - cmake .
             - cmake --build . --config Release
-            - echo "$TRAVIS_BUILD_ID"
+            - cmake --build . --config Release --target install
         
         # TODO: we should share artifacts from compile for unit tests
         # TODO: we should split up unit tests according to functionality
         - stage: test
           name: "Run Unit Tests"
-          script: 
-            - cmake .
-            - cmake --build . --config Release
-            - ctest -C Release .
-          
+          install:
+            - mkdir test
+            - cp ~/artifactcache/$TRAVIS_BUILD_ID/* test
+          script:
+            - test/tests.exe
 stages:
     - compile
     - test

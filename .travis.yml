@@ -3,6 +3,8 @@ language: cpp
 # build/test on windows
 os: windows
 
+cache: ccache;
+
 jobs:
     include:
         - stage: compile
@@ -10,6 +12,7 @@ jobs:
           script:
             - cmake .
             - cmake --build . --config Release
+            - echo "$TRAVIS_BUILD_ID"
         
         # TODO: we should share artifacts from compile for unit tests
         # TODO: we should split up unit tests according to functionality

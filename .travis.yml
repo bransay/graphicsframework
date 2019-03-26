@@ -33,7 +33,7 @@ jobs:
             - mkdir test
             - cp -r "~/artifactcache/$TRAVIS_BUILD_ID/." test
           script:
-            - test/tests.exe
+            - test/bin/tests.exe
 stages:
     - compile
     - test

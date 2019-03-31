@@ -3,6 +3,10 @@ cmake_minimum_required (VERSION 3.0)
 
 project (GraphicsFramework)
 
+# cache variables
+set (BUILD_SHARED false CACHE BOOL "Build shared libraries as shared")
+set (INCLUDE_EXTERNAL_SRC true CACHE BOOL "Include external library source in project")
+
 # some platform independent consts
 set (SRC_DIR src)
 set (INC_DIR inc)
@@ -35,34 +39,72 @@ if (WIN32)
 endif()
 
 # External projects
-set (JOBXX_DIR ${EXTERN_DIR}/jobxx)
-file (GLOB JOBXX_SRC ${JOBXX_DIR}/source/*.cc)
-file (GLOB JOBXX_INCLUDES ${JOBXX_DIR}/include/jobxx/*.h)
-add_library (jobxx STATIC EXCLUDE_FROM_ALL ${JOBXX_SRC} ${JOBXX_INCLUDES})
-target_include_directories (jobxx PRIVATE ${JOBXX_DIR}/include)
-if (MSVC)
-	set_target_properties (jobxx PROPERTIES FOLDER external)
+if (INCLUDE_EXTERNAL_SRC)
+	set (JOBXX_DIR ${EXTERN_DIR}/jobxx)
+	file (GLOB JOBXX_SRC ${JOBXX_DIR}/source/*.cc)
+	file (GLOB JOBXX_INCLUDES ${JOBXX_DIR}/include/jobxx/*.h)
+	add_library (jobxx STATIC EXCLUDE_FROM_ALL ${JOBXX_SRC} ${JOBXX_INCLUDES})
+	target_include_directories (jobxx PRIVATE ${JOBXX_DIR}/include)
+	if (MSVC)
+		set_target_properties (jobxx PROPERTIES FOLDER external)
+	endif()
+endif()
+
+if (BUILD_SHARED)
+	set (SHARED_DEFINES -DGF_SHARED)
+	set (SHARED_EXPORT_DEFINES -DGF_SHARED_EXPORT)
+	set (SHARED_LIBRARY_TYPE SHARED)
+else()
+	set (SHARED_DEFINES)
+	set (SHARED_LIBRARY_TYPE STATIC)
 endif()
 
 # Main Project
+set (GRAPHICSFRAMEWORK_SRC_DIR ${SRC_DIR}/graphicsframework)
+set (GRAPHICSFRAMEWORK_INC_DIR ${INC_DIR}/graphicsframework)
+
 set (ENTRYPOINTS_SRC 
-    ${SRC_DIR}/main_win32.cpp
+    ${GRAPHICSFRAMEWORK_INC_DIR}/main_win32.h
+	${GRAPHICSFRAMEWORK_INC_DIR}/EntryPoint.h
 )
-source_group ("entrypoints" FILES ${ENTRYPOINTS_SRC})
+source_group ("EntryPoints" FILES ${ENTRYPOINTS_SRC})
 
-set (SRC ${ENTRYPOINTS_SRC})
+set (CORE_SRC
+    ${GRAPHICSFRAMEWORK_INC_DIR}/Application.h
+	${GRAPHICSFRAMEWORK_SRC_DIR}/Application.cpp
+	${GRAPHICSFRAMEWORK_INC_DIR}/Config.h
+)
+source_group ("Core" FILES ${CORE_SRC})
 
-set (SIMPLE_DEFINES ${PLATFORM_DEFINES})
+set (SRC ${ENTRYPOINTS_SRC} ${CORE_SRC})
+
+set (GRAPHICSFRAMEWORK_DEFINES ${PLATFORM_DEFINES} ${SHARED_DEFINES} ${SHARED_EXPORT_DEFINES})
+set (GRAPHICSFRAMEWORK_INCLUDES ${INC_DIR} ${EXTERN_INC_DIR})
+set (GRAPHICSFRAMEWORK_LIBS ${PLATFORM_LIBS})
+set (GRAPHICSFRAMEWORK_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
+
+add_library (graphicsframework ${SHARED_LIBRARY_TYPE} ${SRC})
+target_compile_definitions (graphicsframework PRIVATE ${GRAPHICSFRAMEWORK_DEFINES})
+target_include_directories(graphicsframework PRIVATE ${GRAPHICSFRAMEWORK_INCLUDES})
+target_link_libraries (graphicsframework PRIVATE optimized ${GRAPHICSFRAMEWORK_LIBS})
+target_link_libraries (graphicsframework PRIVATE debug ${GRAPHICSFRAMEWORK_LIBS_DEBUG})
+
+set (SIMPLE_SRC_DIR ${SRC_DIR}/samples)
+set (SIMPLE_INC_DIR ${INC_DIR}/samples)
+
+set (SIMPLE_SRC ${SIMPLE_SRC_DIR}/simple.cpp)
+
+set (SIMPLE_DEFINES ${PLATFORM_DEFINES} ${SHARED_DEFINES})
 set (SIMPLE_INCLUDES ${INC_DIR} ${EXTERN_INC_DIR})
 set (SIMPLE_LIBS ${PLATFORM_LIBS})
 set (SIMPLE_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
 
 # TODO: this shouldn't be a target, but it's probably useful for testing
-add_executable (simple ${TARGET_PLATFORM} ${SRC})
+add_executable (simple ${TARGET_PLATFORM} ${SIMPLE_SRC})
 target_compile_definitions (simple PRIVATE ${SIMPLE_DEFINES})
 target_include_directories(simple PRIVATE ${SIMPLE_INCLUDES})
-target_link_libraries (simple PRIVATE optimized ${SIMPLE_LIBS})
-target_link_libraries (simple PRIVATE debug ${SIMPLE_LIBS_DEBUG})
+target_link_libraries (simple PRIVATE optimized graphicsframework ${SIMPLE_LIBS})
+target_link_libraries (simple PRIVATE debug graphicsframework ${SIMPLE_LIBS_DEBUG})
 
 # TODO: add more libraries and stuff?
 
@@ -85,8 +127,8 @@ set (TESTS_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
 
 add_executable (tests ${TESTS_SRC})
 target_include_directories(tests PRIVATE ${TESTS_INCLUDES})
-target_link_libraries(tests PRIVATE optimized ${TESTS_LIBS})
-target_link_libraries(tests PRIVATE debug ${TESTS_LIBS_DEBUG})
+target_link_libraries(tests PRIVATE optimized graphicsframework ${TESTS_LIBS})
+target_link_libraries(tests PRIVATE debug graphicsframework ${TESTS_LIBS_DEBUG})
 
 # Add tests and enable testing
 enable_testing ()

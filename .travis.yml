@@ -3,7 +3,23 @@ language: cpp
 # build/test on windows
 os: windows
 
-script:
-    - cmake .
-    - cmake --build . --config Release
-    - ctest -V -C Release .
+jobs:
+    include:
+        - stage: compile
+          name: "Compile Source"
+          script:
+            - cmake .
+            - cmake --build . --config Release
+        
+        # TODO: we should share artifacts from compile for unit tests
+        # TODO: we should split up unit tests according to functionality
+        - stage: test
+          name: "Run Unit Tests"
+          script: 
+            - cmake .
+            - cmake --build . --config Release
+            - ctest -C Release .
+          
+stages:
+    - compile
+    - test

@@ -23,14 +23,10 @@ if (WIN32)
 	# folder for platform specific libs
 	set (PLATFORM_LIBS_DIR ${CMAKE_SOURCE_DIR}/external/precompiled/win32/lib)
 
-    # TODO: add lib based on debug/release
     set (PLATFORM_LIBS
-        ${PLATFORM_LIBS_DIR}/release/jobxx.lib
+        optimized ${PLATFORM_LIBS_DIR}/release/jobxx.lib
+        debug ${PLATFORM_LIBS_DIR}/debug/jobxx.lib
     )
-
-	set (PLATFORM_LIBS_DEBUG
-		${PLATFORM_LIBS_DIR}/debug/jobxx.lib
-	)
 
 	if (MSVC)
 		# enable support for solution folders
@@ -81,13 +77,11 @@ set (SRC ${ENTRYPOINTS_SRC} ${CORE_SRC})
 set (GRAPHICSFRAMEWORK_DEFINES ${PLATFORM_DEFINES} ${SHARED_DEFINES} ${SHARED_EXPORT_DEFINES})
 set (GRAPHICSFRAMEWORK_INCLUDES ${INC_DIR} ${EXTERN_INC_DIR})
 set (GRAPHICSFRAMEWORK_LIBS ${PLATFORM_LIBS})
-set (GRAPHICSFRAMEWORK_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
 
 add_library (graphicsframework ${SHARED_LIBRARY_TYPE} ${SRC})
 target_compile_definitions (graphicsframework PRIVATE ${GRAPHICSFRAMEWORK_DEFINES})
 target_include_directories(graphicsframework PRIVATE ${GRAPHICSFRAMEWORK_INCLUDES})
-target_link_libraries (graphicsframework PRIVATE optimized ${GRAPHICSFRAMEWORK_LIBS})
-target_link_libraries (graphicsframework PRIVATE debug ${GRAPHICSFRAMEWORK_LIBS_DEBUG})
+target_link_libraries (graphicsframework PRIVATE ${GRAPHICSFRAMEWORK_LIBS})
 
 set (SIMPLE_SRC_DIR ${SRC_DIR}/samples)
 set (SIMPLE_INC_DIR ${INC_DIR}/samples)
@@ -97,14 +91,12 @@ set (SIMPLE_SRC ${SIMPLE_SRC_DIR}/simple.cpp)
 set (SIMPLE_DEFINES ${PLATFORM_DEFINES} ${SHARED_DEFINES})
 set (SIMPLE_INCLUDES ${INC_DIR} ${EXTERN_INC_DIR})
 set (SIMPLE_LIBS ${PLATFORM_LIBS})
-set (SIMPLE_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
 
 # TODO: this shouldn't be a target, but it's probably useful for testing
 add_executable (simple ${TARGET_PLATFORM} ${SIMPLE_SRC})
 target_compile_definitions (simple PRIVATE ${SIMPLE_DEFINES})
 target_include_directories(simple PRIVATE ${SIMPLE_INCLUDES})
-target_link_libraries (simple PRIVATE optimized graphicsframework ${SIMPLE_LIBS})
-target_link_libraries (simple PRIVATE debug graphicsframework ${SIMPLE_LIBS_DEBUG})
+target_link_libraries (simple PRIVATE graphicsframework ${SIMPLE_LIBS})
 
 # TODO: add more libraries and stuff?
 
@@ -123,12 +115,10 @@ set (TESTS_SRC ${TESTS_JOBXX_SRC} ${TESTS_CATCH_SRC})
 
 set (TESTS_LIBS ${PLATFORM_LIBS})
 set (TESTS_INCLUDES ${INC_DIR} ${EXTERN_INC_DIR})
-set (TESTS_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
 
 add_executable (tests ${TESTS_SRC})
 target_include_directories(tests PRIVATE ${TESTS_INCLUDES})
-target_link_libraries(tests PRIVATE optimized graphicsframework ${TESTS_LIBS})
-target_link_libraries(tests PRIVATE debug graphicsframework ${TESTS_LIBS_DEBUG})
+target_link_libraries(tests PRIVATE graphicsframework ${TESTS_LIBS})
 
 # Add tests and enable testing
 enable_testing ()

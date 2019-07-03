@@ -2,11 +2,24 @@
 
 namespace GraphicsFramework
 {
-	IApplication::IApplication()
-	{
-	}
+    Application* Application::ms_Primary = nullptr;
 
-	IApplication::~IApplication()
-	{
-	}
+    Application::Application(ILifeCycle& lifeCycle)
+        : m_LifeCycle(&lifeCycle)
+    {
+    }
+
+    Application::~Application()
+    {
+    }
+
+    void Application::Start()
+    {
+        m_LifeCycle->OnStart();
+    }
+
+    void Application::End()
+    {
+        m_LifeCycle->OnEnd();
+    }
 }

@@ -23,7 +23,6 @@ if (WIN32)
 	# folder for platform specific libs
 	set (PLATFORM_LIBS_DIR ${CMAKE_SOURCE_DIR}/external/precompiled/win32/lib)
 
-    # TODO: add lib based on debug/release
     set (PLATFORM_LIBS
         PRIVATE optimized ${PLATFORM_LIBS_DIR}/release/jobxx.lib
     )
@@ -100,7 +99,6 @@ set (SRC ${ENTRYPOINTS_SRC} ${CORE_SRC})
 set (GRAPHICSFRAMEWORK_DEFINES ${PLATFORM_DEFINES} ${SHARED_DEFINES} ${SHARED_EXPORT_DEFINES})
 set (GRAPHICSFRAMEWORK_INCLUDES ${INC_DIR} ${EXTERN_INC_DIR})
 set (GRAPHICSFRAMEWORK_LIBS ${PLATFORM_LIBS})
-set (GRAPHICSFRAMEWORK_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
 
 add_library (graphicsframework ${SHARED_LIBRARY_TYPE} ${SRC})
 target_compile_definitions (graphicsframework PRIVATE ${GRAPHICSFRAMEWORK_DEFINES})
@@ -115,7 +113,6 @@ set (SIMPLE_SRC ${SIMPLE_SRC_DIR}/simple.cpp)
 set (SIMPLE_DEFINES ${PLATFORM_DEFINES} ${SHARED_DEFINES})
 set (SIMPLE_INCLUDES ${INC_DIR} ${EXTERN_INC_DIR})
 set (SIMPLE_LIBS ${PLATFORM_LIBS})
-set (SIMPLE_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
 
 # TODO: this shouldn't be a target, but it's probably useful for testing
 add_executable (simple ${TARGET_PLATFORM} ${SIMPLE_SRC})
@@ -140,7 +137,6 @@ set (TESTS_SRC ${TESTS_JOBXX_SRC} ${TESTS_CATCH_SRC})
 
 set (TESTS_LIBS ${PLATFORM_LIBS})
 set (TESTS_INCLUDES ${INC_DIR} ${EXTERN_INC_DIR})
-set (TESTS_LIBS_DEBUG ${PLATFORM_LIBS_DEBUG})
 
 add_executable (tests ${TESTS_SRC})
 target_include_directories(tests PRIVATE ${TESTS_INCLUDES})

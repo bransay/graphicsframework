@@ -2,11 +2,11 @@
 
 namespace GraphicsFramework
 {
-	Application::Application()
+	IApplication::IApplication()
 	{
 	}
 
-	Application::~Application()
+	IApplication::~IApplication()
 	{
 	}
 }

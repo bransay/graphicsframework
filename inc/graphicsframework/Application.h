@@ -3,13 +3,15 @@
 
 #include "graphicsframework/Config.h"
 
+#include <string>
+
 namespace GraphicsFramework
 {
-	class GF_DLL Application
+	class GF_DLL IApplication
 	{
 	public:
-		Application();
-		virtual ~Application();
+		IApplication();
+		virtual ~IApplication();
 	};
 }
 
